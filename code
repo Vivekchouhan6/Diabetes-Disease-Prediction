@@ -1,0 +1,80 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sn
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split
+from sklearn import svm
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
+
+# Load dataset
+diabetes_dataset = pd.read_csv('/content/diabetes.csv')
+
+# Display dataset information
+print("Dataset Head:")
+print(diabetes_dataset.head())
+print("\nDataset Shape:", diabetes_dataset.shape)
+print("\nDataset Info:")
+print(diabetes_dataset.info())
+print("\nMissing Values:")
+print(diabetes_dataset.isnull().sum())
+
+# Separating data and labels
+X = diabetes_dataset.drop(columns='Outcome', axis=1)
+Y = diabetes_dataset['Outcome']
+
+# Standardizing the data
+scaler = StandardScaler()
+scaler.fit(X)
+X = scaler.transform(X)
+
+# Splitting dataset
+X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2, stratify=Y, random_state=42)
+
+# Initialize models
+svm_classifier = svm.SVC(kernel='linear', C=1.0)
+rf_classifier = RandomForestClassifier(n_estimators=200, max_depth=10, random_state=42)
+lr_classifier = LogisticRegression(max_iter=500, solver='liblinear')
+
+# Train models
+svm_classifier.fit(X_train, Y_train)
+rf_classifier.fit(X_train, Y_train)
+lr_classifier.fit(X_train, Y_train)
+
+# Predictions
+svm_pred = svm_classifier.predict(X_test)
+rf_pred = rf_classifier.predict(X_test)
+lr_pred = lr_classifier.predict(X_test)
+
+# Accuracy scores
+svm_acc = accuracy_score(Y_test, svm_pred)
+rf_acc = accuracy_score(Y_test, rf_pred)
+lr_acc = accuracy_score(Y_test, lr_pred)
+
+# Confusion matrices
+print("\nSVM Confusion Matrix:")
+print(confusion_matrix(Y_test, svm_pred))
+print("\nRandom Forest Confusion Matrix:")
+print(confusion_matrix(Y_test, rf_pred))
+print("\nLogistic Regression Confusion Matrix:")
+print(confusion_matrix(Y_test, lr_pred))
+
+# Classification reports
+print("\nSVM Classification Report:")
+print(classification_report(Y_test, svm_pred))
+print("\nRandom Forest Classification Report:")
+print(classification_report(Y_test, rf_pred))
+print("\nLogistic Regression Classification Report:")
+print(classification_report(Y_test, lr_pred))
+
+# Find the best model
+accuracy_scores = {"SVM": svm_acc, "Random Forest": rf_acc, "Logistic Regression": lr_acc}
+best_model = max(accuracy_scores, key=accuracy_scores.get)
+
+# Display results
+print(f"\nSVM Accuracy: {svm_acc:.4f}")
+print(f"Random Forest Accuracy: {rf_acc:.4f}")
+print(f"Logistic Regression Accuracy: {lr_acc:.4f}")
+print(f"\nBest Model: {best_model} with Accuracy: {accuracy_scores[best_model]:.4f}")
